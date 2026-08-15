@@ -1,0 +1,127 @@
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/manrope';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --accent: 37 99 235;
+  --accent-dark: 29 78 216;
+}
+
+@layer base {
+  html {
+    @apply antialiased;
+  }
+
+  body {
+    @apply bg-slate-100 text-slate-800 dark:bg-slate-950 dark:text-slate-200;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  *:focus-visible {
+    @apply outline-none ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:ring-offset-slate-950;
+  }
+
+  input[type='range'],
+  input[type='checkbox'] {
+    accent-color: rgb(var(--accent));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-card border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900;
+  }
+
+  .btn-primary {
+    @apply inline-flex h-11 items-center justify-center gap-2 rounded-button bg-blue-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-secondary {
+    @apply inline-flex h-11 items-center justify-center gap-2 rounded-button border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700;
+  }
+
+  .btn-ghost {
+    @apply inline-flex h-11 w-11 items-center justify-center rounded-button text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-800 dark:hover:bg-slate-800 dark:hover:text-slate-100;
+  }
+
+  .input-field {
+    @apply h-11 w-full rounded-input border border-slate-300 bg-white px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100;
+  }
+}
+
+/* ===== Acento configurable =====
+   El azul se re-mapea a la variable --accent (gestionada por useTheme.ts).
+   NO añadas nuevas clases blue-* en los componentes. */
+*:focus-visible {
+  --tw-ring-color: rgb(var(--accent)) !important;
+}
+
+.input-field:focus {
+  border-color: rgb(var(--accent));
+  --tw-ring-color: rgb(var(--accent) / 0.3) !important;
+}
+
+.btn-primary {
+  background-color: rgb(var(--accent));
+}
+
+.btn-primary:hover {
+  background-color: rgb(var(--accent-dark));
+}
+
+.bg-blue-600 {
+  background-color: rgb(var(--accent));
+}
+
+.hover\:bg-blue-700:hover {
+  background-color: rgb(var(--accent-dark));
+}
+
+.bg-blue-600\/10 {
+  background-color: rgb(var(--accent) / 0.1);
+}
+
+.bg-blue-500\/15 {
+  background-color: rgb(var(--accent) / 0.15);
+}
+
+.text-blue-600 {
+  color: rgb(var(--accent));
+}
+
+.text-blue-700 {
+  color: rgb(var(--accent-dark));
+}
+
+.text-blue-400 {
+  color: rgb(var(--accent));
+}
+
+.dark\:text-blue-400 {
+  color: rgb(var(--accent));
+}
+
+.dark\:text-blue-300 {
+  color: rgb(var(--accent));
+}
+
+.stroke-blue-600 {
+  stroke: rgb(var(--accent));
+}
+
+.accent-blue-600 {
+  accent-color: rgb(var(--accent));
+}
