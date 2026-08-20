@@ -1,5 +1,5 @@
 export type EntryType = 'password' | 'document';
-export type Category = 'social' | 'work' | 'finance' | 'personal' | 'other';
+export type Category = 'social' | 'work' | 'finance' | 'personal' | 'streaming' | 'other';
 export type ViewMode = 'list' | 'grid';
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type Seccion = 'boveda' | 'auditoria' | 'nube' | 'ajustes';

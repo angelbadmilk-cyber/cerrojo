@@ -5,6 +5,7 @@ export const CATEGORIAS: { id: Category; etiqueta: string }[] = [
   { id: 'work', etiqueta: 'Trabajo' },
   { id: 'finance', etiqueta: 'Finanzas' },
   { id: 'personal', etiqueta: 'Personal' },
+  { id: 'streaming', etiqueta: 'Streaming' },
   { id: 'other', etiqueta: 'Otras' },
 ];
 
@@ -18,6 +19,7 @@ export function colorCategoria(id: Category): string {
     work: 'bg-violet-500/10 text-violet-700 dark:text-violet-300',
     finance: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
     personal: 'bg-amber-500/10 text-amber-700 dark:text-amber-300',
+    streaming: 'bg-rose-500/10 text-rose-700 dark:text-rose-300',
     other: 'bg-slate-500/10 text-slate-700 dark:text-slate-300',
   };
   return colores[id];
