@@ -37,9 +37,6 @@ export default function VaultCard({ entrada, vista, conFavicons, onOpen }: Vault
       src={urlDuckDuckGo}
       alt=""
       referrerPolicy="no-referrer"
-      crossOrigin="anonymous"
-      loading="lazy"
-      decoding="async"
       onError={(e) => {
         const img = e.currentTarget;
         if (img.src !== urlGoogle) {
