@@ -291,22 +291,22 @@ export default function PasswordForm({ inicial, onClose }: PasswordFormProps) {
             <p className="text-sm font-medium">Origen del documento</p>
             <div className="grid grid-cols-2 gap-2">
               <label className="btn-secondary flex cursor-pointer items-center justify-center gap-1.5">
-                <Camera className="h-4 w-4" />
-                Tomar foto
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={desdeCamara}
-                  className="hidden"
-                />
-              </label>
-              <label className="btn-secondary flex cursor-pointer items-center justify-center gap-1.5">
                 <File className="h-4 w-4" />
                 Elegir archivo
                 <input
                   type="file"
                   accept="image/*,application/pdf"
                   onChange={desdeArchivo}
+                  className="hidden"
+                />
+              </label>
+              <label className="btn-secondary flex cursor-pointer items-center justify-center gap-1.5">
+                <Camera className="h-4 w-4" />
+                Tomar foto
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={desdeCamara}
                   className="hidden"
                 />
               </label>
