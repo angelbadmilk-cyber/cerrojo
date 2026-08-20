@@ -27,7 +27,7 @@ export default function VaultCard({ entrada, vista, conFavicons, onOpen }: Vault
 
   const Avatar = mostrarFavicon ? (
     <img
-      src={`https://icon.horse/icon/${dominio}`}
+      src={`https://icons.duckduckgo.com/ip3/${dominio}.ico`}
       alt=""
       onError={() => setErrorFavicon(true)}
       className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] border border-slate-200 bg-white object-contain p-2 dark:border-slate-700"
