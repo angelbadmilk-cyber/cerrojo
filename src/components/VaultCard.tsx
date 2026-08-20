@@ -29,7 +29,6 @@ export default function VaultCard({ entrada, vista, conFavicons, onOpen }: Vault
   const dominio = obtenerDominio(entrada.url);
   const mostrarFavicon = conFavicons && dominio !== null && !fallbackUsado;
 
-  // URL principal: DuckDuckGo. Si falla, usa Google como fallback.
   const urlDuckDuckGo = dominio ? `https://icons.duckduckgo.com/ip3/${dominio}.ico` : '';
   const urlGoogle = dominio ? `https://www.google.com/s2/favicons?domain=${dominio}&sz=64` : '';
 
@@ -38,6 +37,9 @@ export default function VaultCard({ entrada, vista, conFavicons, onOpen }: Vault
       src={urlDuckDuckGo}
       alt=""
       referrerPolicy="no-referrer"
+      crossOrigin="anonymous"
+      loading="lazy"
+      decoding="async"
       onError={(e) => {
         const img = e.currentTarget;
         if (img.src !== urlGoogle) {

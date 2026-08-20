@@ -1,4 +1,4 @@
-const CACHE = 'cerrojo-v1';
+const CACHE = 'cerrojo-v2';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (evento) => {
@@ -15,6 +15,17 @@ self.addEventListener('activate', (evento) => {
 
 self.addEventListener('fetch', (evento) => {
   if (evento.request.method !== 'GET') return;
+
+  // NO cachear favicons (son dinámicos y dan problemas en móvil)
+  const url = new URL(evento.request.url);
+  if (
+    url.hostname.includes('duckduckgo.com') ||
+    url.hostname.includes('google.com/s2') ||
+    url.hostname.includes('favicon')
+  ) {
+    return;
+  }
+
   evento.respondWith(
     caches.match(evento.request).then(
       (acierto) =>
