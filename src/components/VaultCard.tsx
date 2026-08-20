@@ -21,28 +21,38 @@ function obtenerDominio(url: string | undefined): string | null {
   }
 }
 
+// Cadena de favicons: mismo origen primero (sin CORS), luego servicios CORS-friendly
+function urlsFavicon(dominio: string): string[] {
+  return [
+    `https://${dominio}/favicon.ico`, // Mismo origen, no CORS
+    `https://favicon.im/${dominio}`, // Permite CORS
+    `https://unavatar.io/${dominio}?fallback=false`, // Permite CORS
+    `https://icons.duckduckgo.com/ip3/${dominio}.ico`,
+    `https://www.google.com/s2/favicons?domain=${dominio}&sz=64`,
+  ];
+}
+
 export default function VaultCard({ entrada, vista, conFavicons, onOpen }: VaultCardProps) {
   const avatar = avatarDe(entrada.siteName);
   const [copiado, setCopiado] = useState<'user' | 'pass' | null>(null);
-  const [fallbackUsado, setFallbackUsado] = useState(false);
+  const [indiceFavicon, setIndiceFavicon] = useState(0);
+  const [faviconFallo, setFaviconFallo] = useState(false);
 
   const dominio = obtenerDominio(entrada.url);
-  const mostrarFavicon = conFavicons && dominio !== null && !fallbackUsado;
-
-  const urlDuckDuckGo = dominio ? `https://icons.duckduckgo.com/ip3/${dominio}.ico` : '';
-  const urlGoogle = dominio ? `https://www.google.com/s2/favicons?domain=${dominio}&sz=64` : '';
+  const mostrarFavicon = conFavicons && dominio !== null && !faviconFallo;
+  const urls = dominio ? urlsFavicon(dominio) : [];
 
   const Avatar = mostrarFavicon ? (
     <img
-      src={urlDuckDuckGo}
+      key={`${dominio}-${indiceFavicon}`}
+      src={urls[indiceFavicon]}
       alt=""
       referrerPolicy="no-referrer"
-      onError={(e) => {
-        const img = e.currentTarget;
-        if (img.src !== urlGoogle) {
-          img.src = urlGoogle;
+      onError={() => {
+        if (indiceFavicon + 1 < urls.length) {
+          setIndiceFavicon(indiceFavicon + 1);
         } else {
-          setFallbackUsado(true);
+          setFaviconFallo(true);
         }
       }}
       className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] border border-slate-200 bg-slate-50 object-contain p-1.5 dark:border-slate-700 dark:bg-slate-800"
