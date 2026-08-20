@@ -11,6 +11,7 @@ import {
 } from '../services/cryptoService';
 import {
   descargarBovedaConFecha,
+  entrarNube,
   subirBoveda,
   subirSiHaySesion,
 } from '../services/cloudSync';
@@ -48,6 +49,7 @@ interface VaultContextValue {
   exportarRespaldo: () => EncryptedStorage | null;
   importarRespaldo: (storage: EncryptedStorage) => Promise<void>;
   purgarTodo: () => Promise<void>;
+  restaurarDesdeNube: (email: string, password: string) => Promise<string | null>;
 }
 
 const VaultContext = createContext<VaultContextValue | undefined>(undefined);
@@ -76,12 +78,10 @@ export function VaultProvider({ children }: { children: ReactNode }) {
     })();
   }, []);
 
-  // Marca la hora del último cambio local para comparar con la nube
   const marcarLocal = () => {
     localStorage.setItem('cerrojo_local_updated', new Date().toISOString());
   };
 
-  // Al desbloquear: aplica la copia más reciente (nube o local)
   const sincronizar = async () => {
     const clave = claveBovedaRef.current;
     const local = storageRef.current;
@@ -100,7 +100,6 @@ export function VaultProvider({ children }: { children: ReactNode }) {
     const tRemoto = new Date(remoto.fecha).getTime();
 
     if (tRemoto > tLocal) {
-      // La nube es más reciente: la aplicamos con la clave que acabas de usar
       try {
         const entradasRemotas = await descifrarEntradas(clave, remoto.storage);
         storageRef.current = remoto.storage;
@@ -112,7 +111,6 @@ export function VaultProvider({ children }: { children: ReactNode }) {
         showToast('warning', 'Hay una copia más reciente en la nube protegida con otra clave maestra. Usa «Descargar bóveda» para restaurarla.');
       }
     } else if (tLocal > tRemoto) {
-      // Este dispositivo tiene cambios sin subir: los subimos
       const err = await subirBoveda(local);
       if (!err) marcarLocal();
     }
@@ -257,6 +255,34 @@ export function VaultProvider({ children }: { children: ReactNode }) {
       setEntradas([]);
       setEstado('configuracion');
       showToast('success', 'Todos los datos han sido eliminados de este dispositivo.');
+    },
+
+    // NUEVA FUNCIÓN: restaurar bóveda desde la nube
+    restaurarDesdeNube: async (email, password) => {
+      // 1. Iniciar sesión en Supabase
+      const errorLogin = await entrarNube(email, password);
+      if (errorLogin) return errorLogin;
+
+      // 2. Descargar la bóveda cifrada
+      const remoto = await descargarBovedaConFecha();
+      if (!remoto) {
+        return 'No se encontró ninguna bóveda en la nube para esta cuenta.';
+      }
+
+      // 3. Guardarla localmente (sin descifrar aún)
+      storageRef.current = remoto.storage;
+      claveBovedaRef.current = null;
+      setEntradas([]);
+      setPreguntaRecuperacion(remoto.storage.recoveryQuestion);
+      await guardarBoveda(remoto.storage);
+      await fijarIntentosFallidos(0);
+      setIntentosRestantes(MAX_INTENTOS);
+      marcarLocal();
+
+      // 4. Pasar a estado 'bloqueado' para pedir la clave maestra
+      setEstado('bloqueado');
+      showToast('success', 'Bóveda descargada de la nube. Introduce tu clave maestra.');
+      return null;
     },
   };
 
