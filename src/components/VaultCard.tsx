@@ -10,30 +10,49 @@ interface VaultCardProps {
   onOpen: () => void;
 }
 
+function obtenerDominio(url: string | undefined): string | null {
+  if (!url) return null;
+  try {
+    let u = url.trim();
+    if (!/^https?:\/\//i.test(u)) u = `https://${u}`;
+    return new URL(u).hostname;
+  } catch {
+    return null;
+  }
+}
+
 export default function VaultCard({ entrada, vista, conFavicons, onOpen }: VaultCardProps) {
   const avatar = avatarDe(entrada.siteName);
-  const [errorFavicon, setErrorFavicon] = useState(false);
   const [copiado, setCopiado] = useState<'user' | 'pass' | null>(null);
+  const [fallbackUsado, setFallbackUsado] = useState(false);
 
-  let dominio: string | null = null;
-  if (entrada.url) {
-    try {
-      dominio = new URL(entrada.url).hostname;
-    } catch {
-      dominio = null;
-    }
-  }
-  const mostrarFavicon = conFavicons && dominio !== null && !errorFavicon;
+  const dominio = obtenerDominio(entrada.url);
+  const mostrarFavicon = conFavicons && dominio !== null && !fallbackUsado;
+
+  // URL principal: DuckDuckGo. Si falla, usa Google como fallback.
+  const urlDuckDuckGo = dominio ? `https://icons.duckduckgo.com/ip3/${dominio}.ico` : '';
+  const urlGoogle = dominio ? `https://www.google.com/s2/favicons?domain=${dominio}&sz=64` : '';
 
   const Avatar = mostrarFavicon ? (
     <img
-      src={`https://icons.duckduckgo.com/ip3/${dominio}.ico`}
+      src={urlDuckDuckGo}
       alt=""
-      onError={() => setErrorFavicon(true)}
-      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] border border-slate-200 bg-white object-contain p-2 dark:border-slate-700"
+      referrerPolicy="no-referrer"
+      onError={(e) => {
+        const img = e.currentTarget;
+        if (img.src !== urlGoogle) {
+          img.src = urlGoogle;
+        } else {
+          setFallbackUsado(true);
+        }
+      }}
+      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] border border-slate-200 bg-slate-50 object-contain p-1.5 dark:border-slate-700 dark:bg-slate-800"
     />
   ) : (
-    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] text-sm font-semibold text-white" style={{ backgroundColor: avatar.color }}>
+    <div
+      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] text-sm font-semibold text-white"
+      style={{ backgroundColor: avatar.color }}
+    >
       {avatar.iniciales}
     </div>
   );
@@ -47,7 +66,18 @@ export default function VaultCard({ entrada, vista, conFavicons, onOpen }: Vault
 
   if (vista === 'grid') {
     return (
-      <button type="button" onClick={onOpen} className="card flex w-full flex-col items-start gap-3 p-5 text-left hover:shadow-md">
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={onOpen}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onOpen();
+          }
+        }}
+        className="card flex w-full cursor-pointer flex-col items-start gap-3 p-5 text-left hover:shadow-md"
+      >
         <div className="flex w-full items-start justify-between">
           {Avatar}
           {entrada.favorite && <Star className="h-4 w-4 fill-amber-400 text-amber-400" aria-label="Favorita" />}
@@ -87,12 +117,23 @@ export default function VaultCard({ entrada, vista, conFavicons, onOpen }: Vault
             </div>
           )}
         </div>
-      </button>
+      </div>
     );
   }
 
   return (
-    <button type="button" onClick={onOpen} className="card flex w-full items-center gap-4 p-4 text-left hover:shadow-md">
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={onOpen}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onOpen();
+        }
+      }}
+      className="card flex w-full cursor-pointer items-center gap-4 p-4 text-left hover:shadow-md"
+    >
       {Avatar}
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
@@ -131,6 +172,6 @@ export default function VaultCard({ entrada, vista, conFavicons, onOpen }: Vault
         {etiquetaCategoria(entrada.category)}
       </span>
       <span className="hidden text-xs text-slate-400 md:inline-block">{fechaRelativa(entrada.updatedAt)}</span>
-    </button>
+    </div>
   );
 }
