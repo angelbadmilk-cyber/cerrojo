@@ -14,7 +14,7 @@ interface PasswordFormProps {
 }
 
 const MAX_DOCUMENTO = 3 * 1024 * 1024; // 3 MB
-const MAX_DIMENSION = 2048; // píxeles máximos (ancho o alto) tras comprimir
+const MAX_DIMENSION = 2048; // píxeles máximos tras comprimir
 
 // Comprime una imagen a MAX_DIMENSION y calidad 0.85 para que quepa en 3 MB
 async function comprimirImagen(file: File): Promise<{ base64: string; tipo: string }> {
@@ -23,7 +23,6 @@ async function comprimirImagen(file: File): Promise<{ base64: string; tipo: stri
     lector.onload = () => {
       const img = new Image();
       img.onload = () => {
-        // Calcular nuevas dimensiones manteniendo proporción
         let { width, height } = img;
         if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
           if (width > height) {
@@ -43,7 +42,6 @@ async function comprimirImagen(file: File): Promise<{ base64: string; tipo: stri
           return;
         }
         ctx.drawImage(img, 0, 0, width, height);
-        // Calidad 0.85 = buen equilibrio calidad/tamaño
         const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
         const base64 = dataUrl.split(',')[1];
         resolve({ base64, tipo: 'image/jpeg' });
@@ -75,11 +73,11 @@ export default function PasswordForm({ inicial, onClose }: PasswordFormProps) {
   const [cargando, setCargando] = useState(false);
 
   // Procesa el archivo elegido (sea de cámara o de galería)
-  const procesarArchivo = async (archivo: File) => {
+  const procesarArchivo = async (archivo: File, nombreForzado?: string) => {
     const esImagen = archivo.type.startsWith('image/');
+    const nombreFinal = nombreForzado ?? archivo.name;
     try {
       if (esImagen) {
-        // Comprimir imágenes automáticamente
         const { base64, tipo: tipoImg } = await comprimirImagen(archivo);
         const tamañoFinal = Math.round((base64.length * 3) / 4);
         if (tamañoFinal > MAX_DOCUMENTO) {
@@ -87,25 +85,24 @@ export default function PasswordForm({ inicial, onClose }: PasswordFormProps) {
           return;
         }
         setAttachment(base64);
-        setFileName(archivo.name);
+        setFileName(nombreFinal);
         setFileType(tipoImg);
         showToast('success', `Imagen comprimida a ${(tamañoFinal / 1024).toFixed(0)} KB`);
       } else {
-        // Para PDFs y otros archivos: solo verificar tamaño
         if (archivo.size > MAX_DOCUMENTO) {
-          showToast('warning', `El archivo supera los 3 MB permitidos.`);
+          showToast('warning', 'El archivo supera los 3 MB permitidos.');
           return;
         }
         const lector = new FileReader();
         lector.onload = () => {
           const dataUrl = String(lector.result);
           setAttachment(dataUrl.split(',')[1]);
-          setFileName(archivo.name);
+          setFileName(nombreFinal);
           setFileType(archivo.type);
         };
         lector.readAsDataURL(archivo);
       }
-    } catch (err) {
+    } catch {
       showToast('error', 'No se pudo procesar el archivo.');
     }
   };
@@ -113,17 +110,14 @@ export default function PasswordForm({ inicial, onClose }: PasswordFormProps) {
   const desdeArchivo = (evento: ChangeEvent<HTMLInputElement>) => {
     const archivo = evento.target.files?.[0];
     if (archivo) void procesarArchivo(archivo);
-    evento.target.value = ''; // permite volver a elegir el mismo archivo
+    evento.target.value = '';
   };
 
   const desdeCamara = (evento: ChangeEvent<HTMLInputElement>) => {
     const archivo = evento.target.files?.[0];
     if (archivo) {
-      // Renombrar para que tenga sentido ("foto_2026-08-21.jpg")
       const fecha = new Date().toISOString().slice(0, 10);
-      const nombre = `foto_${fecha}.jpg`;
-      const renombrado = new File([archivo], nombre, { type: archivo.type });
-      void procesarArchivo(renombrado);
+      void procesarArchivo(archivo, `foto_${fecha}.jpg`);
     }
     evento.target.value = '';
   };
