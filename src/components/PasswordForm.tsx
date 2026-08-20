@@ -180,24 +180,24 @@ export default function PasswordForm({ inicial, onClose }: PasswordFormProps) {
     <button
       type="button"
       onClick={() => cambiarTipo(valor)}
-      className={`h-11 flex-1 rounded-button text-sm font-medium transition-colors inline-flex items-center justify-center gap-1.5 ${
+      className={`h-11 rounded-button px-1 text-xs sm:text-sm font-medium transition-colors inline-flex items-center justify-center gap-1 sm:gap-1.5 ${
         tipo === valor
           ? 'bg-blue-600 text-white'
           : 'border border-slate-300 text-slate-600 dark:border-slate-700 dark:text-slate-300'
       }`}
       aria-pressed={tipo === valor}
     >
-      <Icono className="h-4 w-4" />
-      {etiqueta}
+      <Icono className="h-4 w-4 shrink-0" />
+      <span className="truncate">{etiqueta}</span>
     </button>
   );
 
   return (
     <Modal titulo={inicial ? 'Editar entrada' : 'Nueva entrada'} onClose={onClose}>
       <form onSubmit={enviar} className="space-y-4">
-        <div className="flex gap-2" role="group" aria-label="Tipo de entrada">
+        <div className="grid grid-cols-3 gap-2" role="group" aria-label="Tipo de entrada">
           {btnTipo('password', 'Contraseña', KeyRound)}
-          {btnTipo('note', 'Nota segura', FileText)}
+          {btnTipo('note', 'Nota', FileText)}
           {btnTipo('document', 'Documento', File)}
         </div>
 
