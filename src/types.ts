@@ -1,4 +1,4 @@
-export type EntryType = 'password' | 'document';
+export type EntryType = 'password' | 'document' | 'note';
 export type Category = 'social' | 'work' | 'finance' | 'personal' | 'streaming' | 'other';
 export type ViewMode = 'list' | 'grid';
 export type ThemeMode = 'light' | 'dark' | 'system';
@@ -19,6 +19,7 @@ export interface PasswordEntry {
   attachment?: string;
   fileName?: string;
   fileType?: string;
+  content?: string;
   favorite?: boolean;
 }
 

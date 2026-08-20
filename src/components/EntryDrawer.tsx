@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import { Copy, Download, Eye, EyeOff, ExternalLink, Pencil, Star, Trash2, X } from 'lucide-react';
+import { Copy, Download, Eye, EyeOff, ExternalLink, Pencil, Star, Trash2, X, FileText } from 'lucide-react';
 import type { PasswordEntry } from '../types';
 import { useToast } from '../contexts/ToastContext';
 import { avatarDe, colorCategoria, copiarAlPortapapeles, etiquetaCategoria, fechaRelativa } from '../services/uiService';
@@ -26,6 +26,7 @@ function Fila({ etiqueta, children }: { etiqueta: string; children: ReactNode })
 export default function EntryDrawer({ entrada, onClose, onEdit, onDelete, onToggleFavorite }: EntryDrawerProps) {
   const { showToast } = useToast();
   const [verClave, setVerClave] = useState(false);
+  const [verNota, setVerNota] = useState(false);
   const avatar = avatarDe(entrada.siteName);
 
   useEffect(() => {
@@ -63,59 +64,116 @@ export default function EntryDrawer({ entrada, onClose, onEdit, onDelete, onTogg
         </div>
 
         <div className="flex-1 space-y-5 overflow-y-auto p-5">
-          {entrada.username && (
-            <Fila etiqueta="Usuario">
-              <div className="flex items-center gap-2">
-                <code className="flex-1 truncate rounded-input bg-slate-100 px-3 py-2 text-sm dark:bg-slate-800">{entrada.username}</code>
-                <button type="button" className="btn-ghost" onClick={() => copiar(entrada.username, 'Usuario copiado.')} aria-label="Copiar usuario">
-                  <Copy className="h-4 w-4" />
-                </button>
-              </div>
-            </Fila>
+          {entrada.type === 'password' && (
+            <>
+              {entrada.username && (
+                <Fila etiqueta="Usuario">
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 truncate rounded-input bg-slate-100 px-3 py-2 text-sm dark:bg-slate-800">{entrada.username}</code>
+                    <button type="button" className="btn-ghost" onClick={() => copiar(entrada.username, 'Usuario copiado.')} aria-label="Copiar usuario">
+                      <Copy className="h-4 w-4" />
+                    </button>
+                  </div>
+                </Fila>
+              )}
+
+              {entrada.password && (
+                <Fila etiqueta="Contraseña">
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 truncate rounded-input bg-slate-100 px-3 py-2 text-sm dark:bg-slate-800">
+                      {verClave ? entrada.password : '••••••••••••'}
+                    </code>
+                    <button type="button" className="btn-ghost" onClick={() => setVerClave(!verClave)} aria-label={verClave ? 'Ocultar contraseña' : 'Mostrar contraseña'}>
+                      {verClave ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                    <button type="button" className="btn-ghost" onClick={() => copiar(entrada.password, 'Contraseña copiada. El portapapeles se limpiará en 30 s.')} aria-label="Copiar contraseña">
+                      <Copy className="h-4 w-4" />
+                    </button>
+                  </div>
+                </Fila>
+              )}
+
+              {entrada.totpSecret && (
+                <Fila etiqueta="Código 2FA (TOTP)">
+                  <TOTPDisplay secret={entrada.totpSecret} />
+                </Fila>
+              )}
+
+              {entrada.url && (
+                <Fila etiqueta="Sitio web">
+                  <a href={entrada.url} target="_blank" rel="noreferrer" className="inline-flex max-w-full items-center gap-1.5 text-sm text-blue-600 hover:underline dark:text-blue-400">
+                    <span className="truncate">{entrada.url}</span>
+                    <ExternalLink className="h-4 w-4 shrink-0" />
+                  </a>
+                </Fila>
+              )}
+            </>
           )}
 
-          {entrada.type === 'password' && entrada.password && (
-            <Fila etiqueta="Contraseña">
-              <div className="flex items-center gap-2">
-                <code className="flex-1 truncate rounded-input bg-slate-100 px-3 py-2 text-sm dark:bg-slate-800">
-                  {verClave ? entrada.password : '••••••••••••'}
-                </code>
-                <button type="button" className="btn-ghost" onClick={() => setVerClave(!verClave)} aria-label={verClave ? 'Ocultar contraseña' : 'Mostrar contraseña'}>
-                  {verClave ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-                <button type="button" className="btn-ghost" onClick={() => copiar(entrada.password, 'Contraseña copiada. El portapapeles se limpiará en 30 s.')} aria-label="Copiar contraseña">
-                  <Copy className="h-4 w-4" />
-                </button>
-              </div>
-            </Fila>
+          {entrada.type === 'note' && (
+            <>
+              {entrada.username && (
+                <Fila etiqueta="Asociado a">
+                  <code className="block truncate rounded-input bg-slate-100 px-3 py-2 text-sm dark:bg-slate-800">{entrada.username}</code>
+                </Fila>
+              )}
+              <Fila etiqueta="Contenido de la nota">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setVerNota(!verNota)}
+                      className="btn-secondary flex-1 justify-center"
+                    >
+                      {verNota ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      {verNota ? 'Ocultar contenido' : 'Mostrar contenido'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => entrada.content && copiar(entrada.content, 'Nota copiada. El portapapeles se limpiará en 30 s.')}
+                      className="btn-ghost"
+                      aria-label="Copiar nota"
+                      disabled={!entrada.content}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </button>
+                  </div>
+                  {verNota && entrada.content && (
+                    <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded-input bg-slate-100 p-3 font-mono text-sm dark:bg-slate-800">
+                      {entrada.content}
+                    </pre>
+                  )}
+                  {!verNota && (
+                    <div className="flex items-center gap-2 rounded-input bg-slate-100 px-3 py-3 text-sm text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                      <FileText className="h-4 w-4" />
+                      Pulsa «Mostrar contenido» para revelar la nota cifrada.
+                    </div>
+                  )}
+                </div>
+              </Fila>
+            </>
           )}
 
-          {entrada.totpSecret && (
-            <Fila etiqueta="Código 2FA (TOTP)">
-              <TOTPDisplay secret={entrada.totpSecret} />
-            </Fila>
-          )}
-
-          {entrada.url && (
-            <Fila etiqueta="Sitio web">
-              <a href={entrada.url} target="_blank" rel="noreferrer" className="inline-flex max-w-full items-center gap-1.5 text-sm text-blue-600 hover:underline dark:text-blue-400">
-                <span className="truncate">{entrada.url}</span>
-                <ExternalLink className="h-4 w-4 shrink-0" />
-              </a>
-            </Fila>
-          )}
-
-          {entrada.type === 'document' && entrada.attachment && (
-            <Fila etiqueta="Documento">
-              <a
-                href={`data:${entrada.fileType ?? 'application/octet-stream'};base64,${entrada.attachment}`}
-                download={entrada.fileName ?? 'documento'}
-                className="inline-flex items-center gap-2 rounded-input border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
-              >
-                <Download className="h-4 w-4" />
-                {entrada.fileName ?? 'Descargar'}
-              </a>
-            </Fila>
+          {entrada.type === 'document' && (
+            <>
+              {entrada.attachment && (
+                <Fila etiqueta="Documento">
+                  <a
+                    href={`data:${entrada.fileType ?? 'application/octet-stream'};base64,${entrada.attachment}`}
+                    download={entrada.fileName ?? 'documento'}
+                    className="inline-flex items-center gap-2 rounded-input border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+                  >
+                    <Download className="h-4 w-4" />
+                    {entrada.fileName ?? 'Descargar'}
+                  </a>
+                </Fila>
+              )}
+              {entrada.fileType && (
+                <Fila etiqueta="Tipo de archivo">
+                  <p className="text-sm text-slate-600 dark:text-slate-300">{entrada.fileType}</p>
+                </Fila>
+              )}
+            </>
           )}
 
           {entrada.tags.length > 0 && (
