@@ -13,10 +13,9 @@ interface PasswordFormProps {
   onClose: () => void;
 }
 
-const MAX_DOCUMENTO = 3 * 1024 * 1024; // 3 MB
-const MAX_DIMENSION = 2048; // píxeles máximos tras comprimir
+const MAX_DOCUMENTO = 3 * 1024 * 1024;
+const MAX_DIMENSION = 2048;
 
-// Comprime una imagen a MAX_DIMENSION y calidad 0.85 para que quepa en 3 MB
 async function comprimirImagen(file: File): Promise<{ base64: string; tipo: string }> {
   return new Promise((resolve, reject) => {
     const lector = new FileReader();
@@ -72,7 +71,6 @@ export default function PasswordForm({ inicial, onClose }: PasswordFormProps) {
   const [content, setContent] = useState(inicial?.content ?? '');
   const [cargando, setCargando] = useState(false);
 
-  // Procesa el archivo elegido (sea de cámara o de galería)
   const procesarArchivo = async (archivo: File, nombreForzado?: string) => {
     const esImagen = archivo.type.startsWith('image/');
     const nombreFinal = nombreForzado ?? archivo.name;
@@ -180,7 +178,7 @@ export default function PasswordForm({ inicial, onClose }: PasswordFormProps) {
     <button
       type="button"
       onClick={() => cambiarTipo(valor)}
-      className={`h-11 rounded-button px-1 text-xs sm:text-sm font-medium transition-colors inline-flex items-center justify-center gap-1 sm:gap-1.5 ${
+      className={`h-11 w-full rounded-button px-2 text-sm font-medium transition-colors inline-flex items-center justify-center gap-1.5 ${
         tipo === valor
           ? 'bg-blue-600 text-white'
           : 'border border-slate-300 text-slate-600 dark:border-slate-700 dark:text-slate-300'
@@ -195,9 +193,9 @@ export default function PasswordForm({ inicial, onClose }: PasswordFormProps) {
   return (
     <Modal titulo={inicial ? 'Editar entrada' : 'Nueva entrada'} onClose={onClose}>
       <form onSubmit={enviar} className="space-y-4">
-        <div className="grid grid-cols-3 gap-2" role="group" aria-label="Tipo de entrada">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3" role="group" aria-label="Tipo de entrada">
           {btnTipo('password', 'Contraseña', KeyRound)}
-          {btnTipo('note', 'Nota', FileText)}
+          {btnTipo('note', 'Nota segura', FileText)}
           {btnTipo('document', 'Documento', File)}
         </div>
 
@@ -298,7 +296,6 @@ export default function PasswordForm({ inicial, onClose }: PasswordFormProps) {
                 <input
                   type="file"
                   accept="image/*"
-                  capture="environment"
                   onChange={desdeCamara}
                   className="hidden"
                 />
