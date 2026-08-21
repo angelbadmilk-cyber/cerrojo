@@ -63,6 +63,7 @@ export default function UnlockForm({ onOlvido }: UnlockFormProps) {
           />
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => setVerClave(!verClave)}
             className="btn-ghost absolute right-1 top-1/2 -translate-y-1/2"
             aria-label={verClave ? 'Ocultar clave' : 'Mostrar clave'}

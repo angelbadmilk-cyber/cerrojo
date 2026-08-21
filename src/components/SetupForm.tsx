@@ -22,10 +22,10 @@ export default function SetupForm() {
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(false);
 
-  // Estado para el modo de restauración
   const [modoRestaurar, setModoRestaurar] = useState(false);
   const [emailNube, setEmailNube] = useState('');
   const [passwordNube, setPasswordNube] = useState('');
+  const [verClaveNube, setVerClaveNube] = useState(false);
 
   const enviar = async (evento: FormEvent) => {
     evento.preventDefault();
@@ -98,15 +98,26 @@ export default function SetupForm() {
           <label htmlFor="password-nube" className="mb-2 block text-sm font-medium">
             Contraseña de la nube
           </label>
-          <input
-            id="password-nube"
-            type="password"
-            value={passwordNube}
-            onChange={(e) => setPasswordNube(e.target.value)}
-            className="input-field"
-            placeholder="Tu contraseña de la nube"
-            required
-          />
+          <div className="relative">
+            <input
+              id="password-nube"
+              type={verClaveNube ? 'text' : 'password'}
+              value={passwordNube}
+              onChange={(e) => setPasswordNube(e.target.value)}
+              className="input-field pr-14"
+              placeholder="Tu contraseña de la nube"
+              required
+            />
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => setVerClaveNube(!verClaveNube)}
+              className="btn-ghost absolute right-1 top-1/2 -translate-y-1/2"
+              aria-label={verClaveNube ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+            >
+              {verClaveNube ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            </button>
+          </div>
         </div>
 
         {error && (
@@ -164,6 +175,7 @@ export default function SetupForm() {
           />
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => setVerClave(!verClave)}
             className="btn-ghost absolute right-1 top-1/2 -translate-y-1/2"
             aria-label={verClave ? 'Ocultar clave' : 'Mostrar clave'}
