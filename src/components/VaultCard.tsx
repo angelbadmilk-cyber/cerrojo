@@ -21,42 +21,22 @@ function obtenerDominio(url: string | undefined): string | null {
   }
 }
 
-function urlsFavicon(dominio: string): string[] {
-  return [
-    `https://${dominio}/favicon.ico`,
-    `https://favicon.im/${dominio}`,
-    `https://unavatar.io/${dominio}?fallback=false`,
-    `https://icons.duckduckgo.com/ip3/${dominio}.ico`,
-    `https://www.google.com/s2/favicons?domain=${dominio}&sz=64`,
-  ];
-}
-
 export default function VaultCard({ entrada, vista, conFavicons, onOpen }: VaultCardProps) {
   const avatar = avatarDe(entrada.siteName);
   const [copiado, setCopiado] = useState<'user' | 'pass' | 'note' | null>(null);
-  const [indiceFavicon, setIndiceFavicon] = useState(0);
-  const [faviconFallo, setFaviconFallo] = useState(false);
+  const [faviconError, setFaviconError] = useState(false);
 
   const dominio = entrada.type === 'password' ? obtenerDominio(entrada.url) : null;
-  const mostrarFavicon = conFavicons && dominio !== null && !faviconFallo;
-  const urls = dominio ? urlsFavicon(dominio) : [];
+  const mostrarFavicon = conFavicons && dominio !== null && !faviconError;
 
   const IconoTipo =
     entrada.type === 'note' ? FileText : entrada.type === 'document' ? File : KeyRound;
 
   const Avatar = mostrarFavicon ? (
     <img
-      key={`${dominio}-${indiceFavicon}`}
-      src={urls[indiceFavicon]}
+      src={`https://icons.duckduckgo.com/ip3/${dominio}.ico`}
       alt=""
-      referrerPolicy="no-referrer"
-      onError={() => {
-        if (indiceFavicon + 1 < urls.length) {
-          setIndiceFavicon(indiceFavicon + 1);
-        } else {
-          setFaviconFallo(true);
-        }
-      }}
+      onError={() => setFaviconError(true)}
       className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] border border-slate-200 bg-slate-50 object-contain p-1.5 dark:border-slate-700 dark:bg-slate-800"
     />
   ) : (
