@@ -14,26 +14,23 @@ export function useUpdateAvailable() {
       onOfflineReady() {
         console.log('[Update] App lista para uso sin conexión');
       },
-      onRegistered(registration) {
-        console.log('[Update] SW registrado:', registration?.scope);
+      onRegisteredSW(_swUrl, registration) {
+        console.log('[Update] SW URL:', _swUrl);
         // Forzar comprobación cada hora
         if (registration) {
-          setInterval(() => {
+          window.setInterval(() => {
             registration.update();
           }, 60 * 60 * 1000);
         }
       },
-      onRegisteredSW(swUrl, registration) {
-        console.log('[Update] SW URL:', swUrl);
-      },
     });
-    
+
     setUpdateFn(() => updateSW);
   }, []);
 
   const updateApp = () => {
     if (updateFn) {
-      updateFn(true);
+      updateFn();
     } else {
       window.location.reload();
     }
