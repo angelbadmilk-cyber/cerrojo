@@ -27,7 +27,17 @@ export default function CommandPalette({ consulta, onCambiarConsulta, onClose, o
   const q = normalizarTexto(consulta);
   const resultados = q
     ? entradas
-        .filter((e) => [e.siteName, e.username, e.url ?? '', e.tags.join(' ')].some((campo) => normalizarTexto(campo).includes(q)))
+        .filter((e) => {
+          const campos = [
+            e.siteName,
+            e.username,
+            e.url ?? '',
+            e.tags.join(' '),
+            e.content ?? '', // Buscar en contenido de notas
+            e.fileName ?? '', // Buscar en nombres de documentos
+          ];
+          return campos.some((campo) => normalizarTexto(campo).includes(q));
+        })
         .slice(0, 8)
     : [];
 
@@ -44,7 +54,7 @@ export default function CommandPalette({ consulta, onCambiarConsulta, onClose, o
             onKeyDown={(e) => {
               if (e.key === 'Enter' && resultados[0]) onSeleccionar(resultados[0]);
             }}
-            placeholder="Buscar por nombre, usuario o etiqueta…"
+            placeholder="Buscar en toda tu bóveda…"
             className="h-14 flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400"
           />
           <kbd className="rounded border border-slate-300 bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500 dark:border-slate-600 dark:bg-slate-800">ESC</kbd>
@@ -69,7 +79,9 @@ export default function CommandPalette({ consulta, onCambiarConsulta, onClose, o
                 </div>
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium text-slate-900 dark:text-white">{entrada.siteName}</p>
-                  <p className="truncate text-xs text-slate-500 dark:text-slate-400">{entrada.username}</p>
+                  <p className="truncate text-xs text-slate-500 dark:text-slate-400">
+                    {entrada.type === 'document' ? entrada.fileName ?? 'Documento' : entrada.username}
+                  </p>
                 </div>
               </button>
             );

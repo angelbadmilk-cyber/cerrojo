@@ -48,9 +48,18 @@ export default function VaultList({ consulta, onOpen, onAdd }: VaultListProps) {
     return entradas
       .filter((e) => (categoria === 'todas' ? true : e.category === categoria))
       .filter((e) => (etiqueta ? e.tags.includes(etiqueta) : true))
-      .filter((e) =>
-        q ? [e.siteName, e.username, e.url ?? '', e.tags.join(' ')].some((campo) => normalizarTexto(campo).includes(q)) : true,
-      )
+      .filter((e) => {
+        if (!q) return true;
+        const campos = [
+          e.siteName,
+          e.username,
+          e.url ?? '',
+          e.tags.join(' '),
+          e.content ?? '', // Buscar en contenido de notas
+          e.fileName ?? '', // Buscar en nombres de documentos
+        ];
+        return campos.some((campo) => normalizarTexto(campo).includes(q));
+      })
       .sort(
         (a, b) =>
           Number(b.favorite ?? false) - Number(a.favorite ?? false) ||

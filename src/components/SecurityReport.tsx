@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
-import { History, KeyRound, Repeat, ShieldCheck, ShieldAlert } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { History, KeyRound, Repeat, ShieldCheck, ShieldAlert, AlertTriangle } from 'lucide-react';
 import type { PasswordEntry } from '../types';
 import { useVault } from '../contexts/VaultContext';
+import { verificarMultiples } from '../services/breachService';
 
 interface Problema {
   entrada: PasswordEntry;
@@ -10,6 +11,8 @@ interface Problema {
 
 export default function SecurityReport() {
   const { entradas } = useVault();
+  const [comprometidas, setComprometidas] = useState<Set<string>>(new Set());
+  const [verificando, setVerificando] = useState(false);
 
   const auditoria = useMemo(() => {
     const contraseñas = entradas.filter((e) => e.type === 'password' && e.password);
@@ -24,6 +27,8 @@ export default function SecurityReport() {
     const limite90dias = Date.now() - 90 * 86400000;
     const antiguas = contraseñas.filter((e) => new Date(e.updatedAt).getTime() < limite90dias);
 
+    const comprometidasArr = contraseñas.filter((e) => comprometidas.has(e.password));
+
     const score =
       total === 0
         ? 100
@@ -34,7 +39,7 @@ export default function SecurityReport() {
                 (1 -
                   Math.min(
                     1,
-                    (debiles.length * 0.4 + reutilizadas.length * 0.35 + antiguas.length * 0.25) / total,
+                    (debiles.length * 0.4 + reutilizadas.length * 0.35 + antiguas.length * 0.25 + comprometidasArr.length * 0.5) / total,
                   )),
             ),
           );
@@ -45,11 +50,32 @@ export default function SecurityReport() {
         if (entrada.password.length < 10) razones.push('Débil');
         if ((conteo.get(entrada.password) ?? 0) > 1) razones.push('Reutilizada');
         if (new Date(entrada.updatedAt).getTime() < limite90dias) razones.push('Antigua');
+        if (comprometidas.has(entrada.password)) razones.push('Comprometida');
         return { entrada, razones };
       })
       .filter((p) => p.razones.length > 0);
 
-    return { total, debiles: debiles.length, reutilizadas: reutilizadas.length, antiguas: antiguas.length, score, problemas };
+    return { total, debiles: debiles.length, reutilizadas: reutilizadas.length, antiguas: antiguas.length, comprometidas: comprometidasArr.length, score, problemas };
+  }, [entradas, comprometidas]);
+
+  const verificarBreaches = async () => {
+    setVerificando(true);
+    const contraseñas = entradas
+      .filter((e) => e.type === 'password' && e.password)
+      .map((e) => e.password);
+    
+    const resultados = await verificarMultiples([...new Set(contraseñas)]);
+    const comprometidasSet = new Set<string>();
+    resultados.forEach((esComprometida, password) => {
+      if (esComprometida) comprometidasSet.add(password);
+    });
+    setComprometidas(comprometidasSet);
+    setVerificando(false);
+  };
+
+  useEffect(() => {
+    // Verificar automáticamente al montar el componente
+    verificarBreaches();
   }, [entradas]);
 
   const R = 52;
@@ -96,12 +122,12 @@ export default function SecurityReport() {
             <div>
               <h2 className="mb-1 text-lg font-semibold text-slate-900 dark:text-white">Salud de tus contraseñas</h2>
               <p className="text-sm text-slate-600 dark:text-slate-400">
-                Analizamos {auditoria.total} contraseñas en busca de claves débiles, reutilizadas o sin cambiar en más de 90 días.
+                Analizamos {auditoria.total} contraseñas en busca de claves débiles, reutilizadas, antiguas o comprometidas en filtraciones.
               </p>
             </div>
           </section>
 
-          <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div className="card p-5">
               <div className="mb-2 flex items-center gap-2 text-amber-600 dark:text-amber-400">
                 <KeyRound className="h-4 w-4" />
@@ -123,6 +149,13 @@ export default function SecurityReport() {
               </div>
               <p className="text-2xl font-bold text-slate-900 dark:text-white">{auditoria.antiguas}</p>
             </div>
+            <div className="card p-5">
+              <div className="mb-2 flex items-center gap-2 text-red-600 dark:text-red-400">
+                <AlertTriangle className="h-4 w-4" />
+                <span className="text-sm font-medium">Comprometidas</span>
+              </div>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">{auditoria.comprometidas}</p>
+            </div>
           </section>
 
           {auditoria.problemas.length > 0 && (
@@ -137,7 +170,7 @@ export default function SecurityReport() {
                     <p className="truncate text-sm font-medium text-slate-900 dark:text-white">{entrada.siteName}</p>
                     <p className="truncate text-xs text-slate-500 dark:text-slate-400">{entrada.username}</p>
                   </div>
-                  <div className="flex shrink-0 gap-1.5">
+                  <div className="flex shrink-0 flex-wrap gap-1.5">
                     {razones.map((r) => (
                       <span
                         key={r}
@@ -146,7 +179,9 @@ export default function SecurityReport() {
                             ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300'
                             : r === 'Reutilizada'
                               ? 'bg-red-500/10 text-red-700 dark:text-red-300'
-                              : 'bg-slate-500/10 text-slate-700 dark:text-slate-300'
+                              : r === 'Comprometida'
+                                ? 'bg-red-600/20 text-red-800 dark:text-red-200'
+                                : 'bg-slate-500/10 text-slate-700 dark:text-slate-300'
                         }`}
                       >
                         {r}
