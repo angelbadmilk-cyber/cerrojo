@@ -80,7 +80,7 @@ export default function Layout({ onLogout }: LayoutProps) {
               className="flex h-11 max-w-xl flex-1 items-center gap-3 rounded-input border border-slate-200 bg-slate-100 px-4 text-sm text-slate-500 transition-colors hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
             >
               <Search className="h-4 w-4" />
-              <span className="truncate">Buscar en Cerrojo ✨</span>
+              <span className="truncate">Buscar en Cerrojo </span>
               <kbd className="ml-auto hidden rounded border border-slate-300 bg-white px-1.5 py-0.5 text-xs text-slate-500 sm:block dark:border-slate-600 dark:bg-slate-900">Ctrl K</kbd>
             </button>
 
