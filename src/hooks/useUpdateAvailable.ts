@@ -15,13 +15,30 @@ export function useUpdateAvailable() {
         console.log('[Update] App lista para uso sin conexión');
       },
       onRegisteredSW(_swUrl, registration) {
-        console.log('[Update] SW URL:', _swUrl);
-        // Comprobar actualizaciones cada hora mientras la app esté abierta
-        if (registration) {
-          window.setInterval(() => {
+        console.log('[Update] SW registrado:', _swUrl);
+        if (!registration) return;
+
+        // Comprobar actualización INMEDIATAMENTE al abrir la app
+        void registration.update();
+
+        // Comprobar cada 5 minutos mientras la app esté abierta
+        window.setInterval(() => {
+          void registration.update();
+        }, 5 * 60 * 1000);
+
+        // Comprobar cuando la app vuelve a primer plano (crucial para PWA)
+        const onVisible = () => {
+          if (document.visibilityState === 'visible') {
+            console.log('[Update] App visible, comprobando actualizaciones');
             void registration.update();
-          }, 60 * 60 * 1000);
-        }
+          }
+        };
+        document.addEventListener('visibilitychange', onVisible);
+
+        // Limpiar el listener al desmontar
+        return () => {
+          document.removeEventListener('visibilitychange', onVisible);
+        };
       },
       onRegisterError(error) {
         console.error('[Update] Error al registrar SW:', error);

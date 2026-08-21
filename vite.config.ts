@@ -10,16 +10,20 @@ export default defineConfig({
       registerType: 'autoUpdate',
       // NO generar manifest propio: usamos el que ya tienes en public/
       manifest: false,
-      // El plugin generará el SW con hash único en cada build
       strategies: 'generateSW',
       workbox: {
+        // El nuevo SW toma el control inmediatamente sin esperar a cerrar la app
+        skipWaiting: true,
+        // El nuevo SW reclama todas las pestañas/ventanas abiertas
+        clientsClaim: true,
         // Patrones de archivos a cachear
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
-        // NO cachear estas peticiones externas
+        // No usar fallback de navegación para rutas de API
         navigateFallbackDenylist: [/^\/api\//],
+        // Peticiones externas que NO se cachean
         runtimeCaching: [
           {
-            urlPattern: ({ url }) => 
+            urlPattern: ({ url }) =>
               url.hostname.includes('duckduckgo.com') ||
               url.hostname.includes('google.com/s2') ||
               url.hostname.includes('api.pwnedpasswords.com'),
