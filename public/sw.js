@@ -13,6 +13,13 @@ self.addEventListener('activate', (evento) => {
   self.clients.claim();
 });
 
+// Escuchar mensaje para forzar la actualización inmediata
+self.addEventListener('message', (evento) => {
+  if (evento.data && evento.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener('fetch', (evento) => {
   if (evento.request.method !== 'GET') return;
 
@@ -21,7 +28,8 @@ self.addEventListener('fetch', (evento) => {
   if (
     url.hostname.includes('duckduckgo.com') ||
     url.hostname.includes('google.com/s2') ||
-    url.hostname.includes('favicon')
+    url.hostname.includes('favicon') ||
+    url.hostname.includes('api.pwnedpasswords.com')
   ) {
     return;
   }

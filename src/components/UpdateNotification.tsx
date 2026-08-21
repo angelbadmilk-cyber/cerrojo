@@ -1,35 +1,8 @@
-import { useEffect, useState } from 'react';
 import { Download } from 'lucide-react';
+import { useUpdateAvailable } from '../hooks/useUpdateAvailable';
 
 export default function UpdateNotification() {
-  const [needRefresh, setNeedRefresh] = useState(false);
-  const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
-
-  useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.ready.then((reg) => {
-        setRegistration(reg);
-        
-        reg.addEventListener('updatefound', () => {
-          const newWorker = reg.installing;
-          if (newWorker) {
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                setNeedRefresh(true);
-              }
-            });
-          }
-        });
-      });
-    }
-  }, []);
-
-  const updateApp = async () => {
-    if (registration?.waiting) {
-      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-      window.location.reload();
-    }
-  };
+  const { needRefresh, updateApp } = useUpdateAvailable();
 
   if (!needRefresh) return null;
 
