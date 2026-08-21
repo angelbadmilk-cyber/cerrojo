@@ -3,10 +3,10 @@ import { registerSW } from 'virtual:pwa-register';
 
 export function useUpdateAvailable() {
   const [needRefresh, setNeedRefresh] = useState(false);
-  const [updateFn, setUpdateFn] = useState<(() => void) | null>(null);
 
   useEffect(() => {
-    const updateSW = registerSW({
+    registerSW({
+      immediate: true,
       onNeedRefresh() {
         console.log('[Update] ✅ Nueva versión disponible');
         setNeedRefresh(true);
@@ -16,24 +16,22 @@ export function useUpdateAvailable() {
       },
       onRegisteredSW(_swUrl, registration) {
         console.log('[Update] SW URL:', _swUrl);
-        // Forzar comprobación cada hora
+        // Comprobar actualizaciones cada hora mientras la app esté abierta
         if (registration) {
           window.setInterval(() => {
-            registration.update();
+            void registration.update();
           }, 60 * 60 * 1000);
         }
       },
+      onRegisterError(error) {
+        console.error('[Update] Error al registrar SW:', error);
+      },
     });
-
-    setUpdateFn(() => updateSW);
   }, []);
 
   const updateApp = () => {
-    if (updateFn) {
-      updateFn();
-    } else {
-      window.location.reload();
-    }
+    console.log('[Update] Recargando con nueva versión...');
+    window.location.reload();
   };
 
   return { needRefresh, updateApp };
