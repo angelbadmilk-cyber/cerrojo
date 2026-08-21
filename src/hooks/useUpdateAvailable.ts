@@ -5,41 +5,59 @@ export function useUpdateAvailable() {
   const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
 
   useEffect(() => {
-    if (!('serviceWorker' in navigator)) return;
+    if (!('serviceWorker' in navigator)) {
+      console.log('[Update] Service Worker no soportado');
+      return;
+    }
 
     let reg: ServiceWorkerRegistration | null = null;
 
     const checkUpdate = async () => {
-      reg = await navigator.serviceWorker.getRegistration();
-      if (!reg) return;
+      try {
+        const obtenido = await navigator.serviceWorker.getRegistration();
+        reg = obtenido ?? null;
+        console.log('[Update] Registration:', reg);
 
-      setRegistration(reg);
+        if (!reg) {
+          console.log('[Update] No hay service worker registrado');
+          return;
+        }
 
-      // Si ya hay un service worker esperando, mostrar botón
-      if (reg.waiting) {
-        setNeedRefresh(true);
-        return;
-      }
+        setRegistration(reg);
 
-      // Escuchar cuando aparezca una nueva versión
-      reg.addEventListener('updatefound', () => {
-        const newWorker = reg?.installing;
-        if (!newWorker) return;
+        // Si ya hay un service worker esperando, mostrar botón
+        if (reg.waiting) {
+          console.log('[Update] Hay un SW esperando, mostrando botón');
+          setNeedRefresh(true);
+          return;
+        }
 
-        newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            setNeedRefresh(true);
-          }
+        // Escuchar cuando aparezca una nueva versión
+        reg.addEventListener('updatefound', () => {
+          console.log('[Update] Nueva versión encontrada');
+          const newWorker = reg?.installing;
+          if (!newWorker) return;
+
+          newWorker.addEventListener('statechange', () => {
+            console.log('[Update] Estado del nuevo SW:', newWorker.state);
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              console.log('[Update] SW instalado y hay controller, mostrando botón');
+              setNeedRefresh(true);
+            }
+          });
         });
-      });
+      } catch (error) {
+        console.error('[Update] Error:', error);
+      }
     };
 
     void checkUpdate();
 
-    // Comprobar actualizaciones cada hora mientras la app esté abierta
+    // Comprobar actualizaciones cada 30 segundos mientras la app esté abierta
     const interval = window.setInterval(() => {
+      console.log('[Update] Comprobando actualizaciones...');
       reg?.update();
-    }, 60 * 60 * 1000);
+    }, 30 * 1000);
 
     return () => {
       window.clearInterval(interval);
