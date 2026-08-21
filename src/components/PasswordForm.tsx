@@ -306,6 +306,7 @@ export default function PasswordForm({ inicial, onClose }: PasswordFormProps) {
                 <input
                   type="file"
                   accept="image/*"
+                  capture="environment"
                   onChange={desdeCamara}
                   className="hidden"
                 />
