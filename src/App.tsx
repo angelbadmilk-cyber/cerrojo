@@ -3,6 +3,7 @@ import { Loader2 } from 'lucide-react';
 import AuthScreen from './components/AuthScreen';
 import Layout from './components/Layout';
 import Onboarding from './components/Onboarding';
+import UpdateNotification from './components/UpdateNotification';
 import { ToastProvider } from './contexts/ToastContext';
 import { VaultProvider, useVault } from './contexts/VaultContext';
 import { useTheme } from './hooks/useTheme';
@@ -49,6 +50,7 @@ export default function App() {
       <VaultProvider>
         <Contenido />
       </VaultProvider>
+      <UpdateNotification />
     </ToastProvider>
   );
 }

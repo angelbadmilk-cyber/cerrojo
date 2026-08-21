@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { History, KeyRound, Repeat, ShieldCheck, ShieldAlert, AlertTriangle } from 'lucide-react';
+import { History, KeyRound, Repeat, ShieldCheck, ShieldAlert, AlertTriangle, Loader2 } from 'lucide-react';
 import type { PasswordEntry } from '../types';
 import { useVault } from '../contexts/VaultContext';
 import { verificarMultiples } from '../services/breachService';
@@ -59,11 +59,13 @@ export default function SecurityReport() {
   }, [entradas, comprometidas]);
 
   const verificarBreaches = async () => {
-    setVerificando(true);
     const contraseñas = entradas
       .filter((e) => e.type === 'password' && e.password)
       .map((e) => e.password);
-    
+
+    if (contraseñas.length === 0) return;
+
+    setVerificando(true);
     const resultados = await verificarMultiples([...new Set(contraseñas)]);
     const comprometidasSet = new Set<string>();
     resultados.forEach((esComprometida, password) => {
@@ -74,8 +76,8 @@ export default function SecurityReport() {
   };
 
   useEffect(() => {
-    // Verificar automáticamente al montar el componente
-    verificarBreaches();
+    void verificarBreaches();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entradas]);
 
   const R = 52;
@@ -85,7 +87,15 @@ export default function SecurityReport() {
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-6">
-      <h1 className="text-xl font-bold text-slate-900 dark:text-white">Auditoría de seguridad</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold text-slate-900 dark:text-white">Auditoría de seguridad</h1>
+        {verificando && (
+          <span className="inline-flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            Verificando filtraciones…
+          </span>
+        )}
+      </div>
 
       {auditoria.total === 0 ? (
         <div className="card flex flex-col items-center px-6 py-16 text-center">
@@ -154,7 +164,9 @@ export default function SecurityReport() {
                 <AlertTriangle className="h-4 w-4" />
                 <span className="text-sm font-medium">Comprometidas</span>
               </div>
-              <p className="text-2xl font-bold text-slate-900 dark:text-white">{auditoria.comprometidas}</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                {verificando ? '…' : auditoria.comprometidas}
+              </p>
             </div>
           </section>
 
