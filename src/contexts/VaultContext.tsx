@@ -259,7 +259,7 @@ export function VaultProvider({ children }: { children: ReactNode }) {
 
     // NUEVA FUNCIÓN: restaurar bóveda desde la nube
     restaurarDesdeNube: async (email, password) => {
-      // 1. Iniciar sesión en Supabase
+      // 1. Iniciar sesión en Firebase
       const errorLogin = await entrarNube(email, password);
       if (errorLogin) return errorLogin;
 

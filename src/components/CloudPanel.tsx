@@ -103,11 +103,27 @@ function PanelNube() {
           <form onSubmit={autenticar} className="space-y-4">
             <div>
               <label htmlFor="correo" className="mb-2 block text-sm font-medium">Correo electrónico</label>
-              <input id="correo" type="email" className="input-field" value={correo} onChange={(e) => setCorreo(e.target.value)} placeholder="tu@correo.com" required />
+              <input
+                id="correo"
+                type="email"
+                className="input-field"
+                value={correo}
+                onChange={(e) => setCorreo(e.target.value)}
+                placeholder="tu@correo.com"
+                required
+              />
             </div>
             <div>
               <label htmlFor="clave-nube" className="mb-2 block text-sm font-medium">Contraseña de la nube</label>
-              <input id="clave-nube" type="password" className="input-field" value={claveNube} onChange={(e) => setClaveNube(e.target.value)} placeholder="Mínimo 6 caracteres" required />
+              <input
+                id="clave-nube"
+                type="password"
+                className="input-field"
+                value={claveNube}
+                onChange={(e) => setClaveNube(e.target.value)}
+                placeholder="Mínimo 6 caracteres"
+                required
+              />
             </div>
             <button type="submit" disabled={cargando} className="btn-primary w-full">
               <Cloud className="h-4 w-4" />
@@ -120,7 +136,7 @@ function PanelNube() {
               onClick={() => setModoRegistro(!modoRegistro)}
               className="text-blue-600 hover:underline dark:text-blue-400"
             >
-              {modoRegistro ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Créala aquí'}
+              {modoRegistro ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? CrÉala aquí'}
             </button>
           </p>
         </div>
