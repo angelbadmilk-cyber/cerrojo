@@ -1,0 +1,28 @@
+name: Mantener Supabase activo
+
+on:
+  schedule:
+    # Cada 5 días a las 3:00 UTC (por debajo del umbral de 7 días)
+    - cron: '0 3 */5 * *'
+  workflow_dispatch: # Permite ejecutarlo manualmente
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hacer ping a Supabase
+        run: |
+          echo "Haciendo ping a Supabase para mantenerlo activo..."
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
+            "${{ secrets.SUPABASE_URL }}/auth/v1/health" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            --max-time 30 || echo "000")
+          
+          echo "Código de respuesta: $RESPONSE"
+          
+          if [ "$RESPONSE" = "000" ]; then
+            echo "⚠️ El proyecto no responde. Puede estar pausado."
+            exit 1
+          else
+            echo "✅ Proyecto activo."
+          fi
