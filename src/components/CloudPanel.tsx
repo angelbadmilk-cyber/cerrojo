@@ -13,7 +13,7 @@ import {
   subirBoveda,
   ultimaSincronizacion,
 } from '../services/cloudSync';
-import { nubeConfigurada } from '../services/supabaseClient';
+import { nubeConfigurada } from '../services/firebaseClient';
 import { fechaRelativa } from '../services/uiService';
 import CloudSetup from './CloudSetup';
 import ConfirmationDialog from './ConfirmationDialog';
